@@ -141,9 +141,37 @@ app.get('/login', async (req, res) => {
 
 
 
-  app.get('/expenses', async (req, res) => {
+  app.get('/expenses/data', async (req, res) => {
+    const {user_id,category,fromDate} = req.query;
     try {
-      const expense = await db.manyOrNone('select * from "Budgeting".expenses where user_id = 1 RETURNING *');
+
+        if (!user_id || !category || !fromDate) {
+            return res.status(400).json({ error: "Missing required parameters" });
+        }
+
+      const expense = await db.manyOrNone('select * from "Budgeting".expenses where user_id = $1 and category = $2 and expense_date > $3',
+       [user_id,category,fromDate]
+      );
+      res.json(expense);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+   
+
+
+app.get('/goal/data', async (req, res) => {
+    const {user_id} = req.query;
+    try {
+
+        if (!user_id) {
+            return res.status(400).json({ error: "Missing required parameters" });
+        }
+
+      const expense = await db.manyOrNone('select * from "Budgeting".budget b where id = $1',
+       [user_id]
+      );
       res.json(expense);
     } catch (err) {
       res.status(500).json({ error: err.message });
